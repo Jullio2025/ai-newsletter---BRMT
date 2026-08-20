@@ -37,6 +37,9 @@ RSS_FEEDS = {
     "Wired AI": "https://www.wired.com/feed/tag/ai/latest/rss",
     "MIT Technology Review AI": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
     "Hugging Face Blog": "https://huggingface.co/blog/feed.xml",
+    # Fontes em português (BR) — o resto é em inglês, o Gemini traduz na hora de resumir de qualquer forma
+    "Tecnoblog (IA)": "https://tecnoblog.net/tema/inteligencia-artificial/feed/",
+    "MIT Technology Review Brasil": "https://mittechreview.com.br/feed/",
 }
 
 # ============ HELPERS ============
