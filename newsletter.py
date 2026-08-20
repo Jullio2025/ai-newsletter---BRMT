@@ -237,6 +237,8 @@ def main():
     print("Coletando notícias...")
     news = collect_news()
     print(f"Total de itens coletados: {len(news)}")
+    for it in news:
+        print(f"  - [{it['source']}] {it['title']} | {it['link']}")
 
     print("Coletando rankings...")
     rankings = fetch_rankings()
