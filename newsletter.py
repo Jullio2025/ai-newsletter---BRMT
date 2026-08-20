@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Newsletter de IA — busca novidades, resume com Claude e envia pro Telegram.
+Newsletter de IA — busca novidades, resume com Gemini e envia pro Telegram.
 Rodado automaticamente via GitHub Actions (ver .github/workflows/newsletter.yml)
 """
 
@@ -9,17 +9,17 @@ import json
 import time
 import urllib.request
 import urllib.parse
+import urllib.error
 import xml.etree.ElementTree as ET
 from email.utils import parsedate_to_datetime
 from datetime import datetime, timedelta, timezone
-
-import anthropic
 
 # ============ CONFIG ============
 
 TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
-ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
+GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
 
 # Janela de tempo: pega notícias dos últimos N dias (semanal = 7)
 DAYS_WINDOW = int(os.environ.get("DAYS_WINDOW", "7"))
@@ -130,12 +130,10 @@ def fetch_rankings():
     return rankings_text
 
 
-# ============ SUMMARIZE WITH CLAUDE ============
+# ============ SUMMARIZE WITH GEMINI ============
 
 
 def build_newsletter(news_items, rankings_text):
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-
     raw_dump = "\n\n".join(
         f"Fonte: {it['source']}\nTítulo: {it['title']}\nLink: {it['link']}\nResumo original: {it['desc'][:300]}"
         for it in news_items
@@ -162,13 +160,26 @@ NOTÍCIAS BRUTAS COLETADAS:
 {raw_dump}
 """
 
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=2000,
-        messages=[{"role": "user", "content": prompt}],
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+    body = json.dumps(
+        {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"maxOutputTokens": 2000},
+        }
+    ).encode()
+    req = urllib.request.Request(
+        url,
+        data=body,
+        headers={"Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY},
     )
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            data = json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"Gemini API {e.code}: {e.read().decode(errors='replace')}") from None
 
-    return "".join(block.text for block in response.content if hasattr(block, "text"))
+    parts = data["candidates"][0]["content"]["parts"]
+    return "".join(p.get("text", "") for p in parts)
 
 
 # ============ SEND TO TELEGRAM ============
@@ -226,7 +237,7 @@ def main():
         print("Nenhuma notícia coletada, abortando.")
         return
 
-    print("Gerando newsletter com Claude...")
+    print("Gerando newsletter com Gemini...")
     newsletter_text = build_newsletter(news, rankings)
 
     print("Enviando pro Telegram...")
