@@ -29,9 +29,14 @@ RSS_FEEDS = {
     "The Verge AI": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
     "Ars Technica": "https://feeds.arstechnica.com/arstechnica/technology-lab",
     "OpenAI Blog": "https://openai.com/blog/rss.xml",
-    "Anthropic News": "https://www.anthropic.com/news/rss.xml",
+    # A Anthropic não publica feed oficial — este é mantido pela comunidade (taobojlen/anthropic-rss-feed)
+    "Anthropic News": "https://raw.githubusercontent.com/taobojlen/anthropic-rss-feed/main/anthropic_news_rss.xml",
     "Google DeepMind": "https://deepmind.google/blog/rss.xml",
     "Hacker News (AI)": "https://hnrss.org/newest?q=AI+OR+LLM+OR+%22large+language+model%22",
+    "VentureBeat AI": "https://venturebeat.com/category/ai/feed/",
+    "Wired AI": "https://www.wired.com/feed/tag/ai/latest/rss",
+    "MIT Technology Review AI": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
+    "Hugging Face Blog": "https://huggingface.co/blog/feed.xml",
 }
 
 # ============ HELPERS ============
